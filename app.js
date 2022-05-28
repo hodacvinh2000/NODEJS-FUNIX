@@ -12,6 +12,7 @@ const server = http.createServer((req, res) => {
         fs.writeFileSync('message.txt','DUMMY');
         res.statusCode = 302;
         res.setHeader('Location','/');
+        return res.end();
     }
     res.setHeader('Content-Type','text/html');
     res.write('<html><body></body><h1>Hello from my Node.js server!</h1></html>');
