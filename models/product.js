@@ -24,9 +24,9 @@ module.exports = class Product {
         });
     }
 
-    static fetchAll() {
+    static fetchAll(cb) {
         fs.readFile(p, (err, fileContent) => {
-            return err ? [] : JSON.parse(fileContent);
+            return err ? cb([]) : cb(JSON.parse(fileContent));
         });
     }
 }
