@@ -37,4 +37,6 @@ mongoose
   .then((result) => {
     app.listen(3000);
   })
-  .catch((err) => console.log(err));
+  .catch((err) => {
+    console.log(err);
+  });
