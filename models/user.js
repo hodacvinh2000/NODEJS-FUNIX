@@ -5,22 +5,23 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   name: {
     type: String,
-    require: true,
+    required: true,
   },
   email: {
     type: String,
-    require: true,
+    required: true,
   },
   cart: {
     items: [
       {
         productId: {
           type: Schema.Types.ObjectId,
-          require: true,
+          ref: "Product",
+          required: true,
         },
         quantity: {
           type: Number,
-          require: true,
+          requirde: true,
         },
       },
     ],
