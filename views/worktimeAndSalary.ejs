@@ -1,0 +1,61 @@
+<%- include('includes/header.ejs') %>
+    
+<div id="timekeepings">
+    <div style="width: 100%">
+        <h4 align="center">Danh sách phiên làm việc</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr class="table-dark">
+                    <td>Ngày</td>
+                    <td>Nơi làm việc</td>
+                    <td>AnnualLeave đã đăng ký</td>
+                    <td>Giờ bắt đầu</td>
+                    <td>Giờ kết thúc</td>
+                    <td>Tổng số giờ đã làm</td>
+                    <td>Tổng số giờ làm trong ngày</td>
+                    <td>Giờ đã làm thêm</td>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (let t of timekeepings) { %>
+                    <tr>
+                        <td><%= t.timekeeping.createdAt.getDate()%>/<%= t.timekeeping.createdAt.getMonth() + 1%>/<%= t.timekeeping.createdAt.getFullYear()%></td>
+                        <td><%= t.timekeeping.workPlace %></td>
+                        <td><%= t.annualLeave %>h</td>
+                        <td><%= t.timekeeping.createdAt.getHours()%>:<%= t.timekeeping.createdAt.getMinutes()%>:<%= t.timekeeping.createdAt.getSeconds()%></td>
+                        <% if (t.timekeeping.status) { %> 
+                            <td>--</td>
+                            <td>Chưa kết thúc</td>
+                        <% } else { %> 
+                            <td><%= t.timekeeping.updatedAt.getHours()%>:<%= t.timekeeping.updatedAt.getMinutes()%>:<%= t.timekeeping.updatedAt.getSeconds()%></td>
+                            <td><%= t.workedTime.hours %>h:<%= t.workedTime.minutes %>m</td>
+                        <% } %>
+                        <td><%= t.totalTime %></td>
+                        <td><%= t.overTime %></td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+    <div align="center">
+        <form action="/workTimeAndSalary" method="get">
+            Tháng: <input type="number" name="month" id="month" style="width: 50px;">
+            Năm: <input type="number" name="year" id="year" style="width: 100px;">
+            <button type="submit" class="btn btn-success">Xem lương</button>
+        </form>
+        <% if (salary) { %> 
+            <div class="card" style="width: 70%; background-color: rgb(194, 129, 255);">
+                <div class="card-body">
+                    <p>Lương = SalaryScale*3000000 + (OverTime - MissHours)*200000 = <%= salary.salary %></p>
+                    <i>*SalaryScale: <%= salary.salaryScale %> -- </i>
+                    <i>*OverTime: <%= salary.overTime %>h -- </i>
+                    <i>*MissHours: <%= salary.missHours %>h</i>
+                </div>
+              </div>
+        <% } %>
+    </div>
+    <br><br><br>
+</div>
+
+<!-- Script -->
+<%- include('includes/footer.ejs') %>

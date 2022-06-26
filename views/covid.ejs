@@ -1,0 +1,56 @@
+<%- include('includes/header.ejs') %>
+
+<div class="flex-container">
+    <div class="flex-column" style="width: 33%;">
+        <div class="card">
+            <div class="card-body">
+                <h4>Đăng ký nhiệt độ thân thể</h4>
+                <button class="btn btn-primary" onclick="formTemperature()">Nhập thông tin</button>
+                <div id="formTemperature"></div>
+                <% for (let t of user.temperature) { %> 
+                    <hr>
+                    <div>
+                        <p>Thời gian: <%= t.time.toLocaleString() %></p>
+                        <p>Nhiệt độ: <%= t.value %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <div class="flex-column"  style="width: 33%;">
+        <div class="card">
+            <div class="card-body">
+                <h4>Đăng ký thông tin tiêm vaccine</h4>
+                <button class="btn btn-primary" onclick="formVaccine()">Nhập thông tin</button>
+                <div id="formVaccine"></div>
+                <% for (let t of user.vaccine) { %> 
+                    <hr>
+                    <div>
+                        <p>Ngày tiêm: <%= t.date.getDate() %>/<%= t.date.getMonth()+1 %>/<%= t.date.getFullYear() %></p>
+                        <p>Loại vaccine: <%= t.typeOfvaccine %></p>
+                        <p>Mũi thứ: <%= t.serial %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <div class="flex-column"  style="width: 33%;">
+        <div class="card">
+            <div class="card-body">
+                <h4>Đăng ký thông tin dương tính với covid</h4>
+                <button class="btn btn-primary" onclick="formCovid()">Nhập thông tin</button>
+                <div id="formCovid"></div>
+                <% for (let t of user.haveCovid) { %> 
+                    <hr>
+                    <div>
+                        <p>Ngày: <%= t.date.getDate() %>/<%= t.date.getMonth()+1 %>/<%= t.date.getFullYear() %></p>
+                        <p>Trạng thái: <% if (t.status) { %>Mắc covid<% } else { %>Đã khỏi<% } %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script -->
+<%- include('includes/footer.ejs') %>

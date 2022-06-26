@@ -1,0 +1,88 @@
+<%- include('includes/header.ejs') %>
+    <div align="center" class="tkp-main">
+        <% if (user.working) { %>
+            <div class="list-button">
+                <button class="btn btn-success" disabled>Điểm danh</button>
+                <a href="/checkout"><button class="btn btn-warning">Kết thúc làm</button></a>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal">
+                    Nghỉ phép
+                </button>
+            </div>
+            <div class="card" style="width: 70%; text-align: left;">
+                <div class="card-body">
+                    <p>Họ tên: <%= user.name %></p>
+                    <p>Nơi làm việc: <%= timekeeping.workPlace %></p>
+                    <p>Bắt đầu làm: <%= timekeeping.createdAt.toLocaleString() %></p>
+                </div>
+            </div>
+        <% } else { %> 
+            <div class="list-button">
+                <button class="btn btn-success" onclick="showStartWorkForm('<%=user.name%>')">Điểm danh</button>
+                <button class="btn btn-warning" disabled>Kết thúc làm</button>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal">
+                    Nghỉ phép
+                </button>
+            </div>
+            <div id="startWorkForm"></div>
+            <div>
+                <div>
+                    <p>Số giờ đã làm: <%= workTime.hours %>h : <%= workTime.minutes %>m</p>
+                </div>
+                <% for (let timekeeping of timekeepings) { %>
+                <div class="card" style="width: 70%; text-align: left;">
+                    <div class="card-body">
+                        <div>Nơi làm việc: <%= timekeeping.workPlace %></div>
+                        <span>Bắt đầu: <%= timekeeping.createdAt.toLocaleString() %></span> |
+                        <span>Kết thúc: <%= timekeeping.updatedAt.toLocaleString() %></span>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        <% } %>
+    </div>	
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Nghỉ phép</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="model-body">
+                <div class="annualLeaveInfo">
+                    <p>Số ngày còn lại: <%= user.annualLeave %> (<%= user.annualLeave*8 %>h)</p>
+                    <% if (user.annualLeave === 0) { %><p>Đã hết ngày phép!!!</p><% } %>
+                </div>
+                <form action="/add-dayoff" method="post" id="dayoffForm">
+                    <div class="form-group">
+                        <label for="dayoff">
+                            Ngày nghỉ:
+                        </label>
+                        <input type="date" id="dayoff" name="dayoff" class="form-control" placeholder="Chọn ngày nghỉ" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hours">
+                            Số giờ:
+                        </label>
+                        <input type="number" min="0" max="<%= user.annualLeave*8 >= 8 ? '8' : user.annualLeave*8 %>" name="hours" value="<%= user.annualLeave*8 >= 8 ? '8' : user.annualLeave*8 %>" id="hours" class="form-control" required>    
+                    </div>
+                    <div class="form-group">
+                        <label for="reasion">
+                            Lí do:
+                        </label>
+                        <input type="text" name="reason" id="reason" class="form-control" required>    
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <% if (user.annualLeave === 0) { %>
+                    <button type="submit" class="btn btn-primary" form="dayoffForm" disabled>Xác nhận</button>
+                <% } else { %> 
+                    <button type="submit" class="btn btn-primary" form="dayoffForm">Xác nhận</button>
+                <% } %>  
+            </div>
+        </div>
+        </div>
+    </div>
+    <!-- Script -->
+    <%- include('includes/footer.ejs') %>
