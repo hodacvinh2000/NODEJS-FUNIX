@@ -1,4 +1,5 @@
 exports.getLogin = (req, res, next) => {
+  // can change cookie value on browser
   const cookieArray = req
     .get("Cookie")
     .split(";")
