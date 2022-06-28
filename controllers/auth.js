@@ -82,23 +82,19 @@ exports.postSignup = (req, res, next) => {
         );
         return res.redirect("/signup");
       }
-      if (password === confirmPassword) {
-        return bcrypt
-          .hash(password, 12)
-          .then((hashedPassword) => {
-            const user = new User({
-              email: email,
-              password: hashedPassword,
-              cart: { items: [] },
-            });
-            return user.save();
-          })
-          .then(() => {
-            res.redirect("/login");
+      return bcrypt
+        .hash(password, 12)
+        .then((hashedPassword) => {
+          const user = new User({
+            email: email,
+            password: hashedPassword,
+            cart: { items: [] },
           });
-      }
-      req.flash("error", "Password and ConfirmPassword do not match.");
-      return res.redirect("/signup");
+          return user.save();
+        })
+        .then(() => {
+          res.redirect("/login");
+        });
     })
     .catch((err) => {
       console.log(err);
