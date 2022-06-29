@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const { validationResult } = require("express-validator/check");
+const mongoose = require("mongoose");
 
 exports.getAddProduct = (req, res, next) => {
   if (!req.session.isLoggedIn) {
@@ -44,6 +45,7 @@ exports.postAddProduct = (req, res, next) => {
     });
   }
   const product = new Product({
+    _id: new mongoose.Types.ObjectId("62bc64192279ef312c35e500"),
     title: title,
     price: price,
     description: description,
@@ -58,7 +60,21 @@ exports.postAddProduct = (req, res, next) => {
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      console.log(err);
+      // return res.status(500).render("admin/edit-product", {
+      //   pageTitle: "Add Product",
+      //   path: "/admin/add-product",
+      //   editing: false,
+      //   hasError: true,
+      //   errorMessage: 'Database operation failed, please try again.',
+      //   product: {
+      //     title: title,
+      //     imageUrl: imageUrl,
+      //     price: price,
+      //     description: description,
+      //   },
+      //   validationErrors: [],
+      // });
+      res.redirect("/500");
     });
 };
 
