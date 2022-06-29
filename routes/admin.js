@@ -1,4 +1,5 @@
 const path = require("path");
+const validator = require("../middleware/validator");
 
 const express = require("express");
 
@@ -14,11 +15,21 @@ router.get("/add-product", isAuth, adminController.getAddProduct);
 router.get("/products", isAuth, adminController.getProducts);
 
 // /admin/add-product => POST
-router.post("/add-product", isAuth, adminController.postAddProduct);
+router.post(
+  "/add-product",
+  isAuth,
+  validator.checkAddProduct,
+  adminController.postAddProduct
+);
 
 router.get("/edit-product/:productId", isAuth, adminController.getEditProduct);
 
-router.post("/edit-product", isAuth, adminController.postEditProduct);
+router.post(
+  "/edit-product",
+  isAuth,
+  validator.checkEditProduct,
+  adminController.postEditProduct
+);
 
 router.post("/delete-product", isAuth, adminController.postDeleteProduct);
 

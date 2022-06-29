@@ -2,7 +2,7 @@ const { check, body } = require("express-validator/check");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
-const checkSignupForm = [
+const checkSignup = [
   check("email")
     .isEmail()
     .withMessage("Please enter a valid email")
@@ -33,7 +33,7 @@ const checkSignupForm = [
     }),
 ];
 
-const checkLoginForm = [
+const checkLogin = [
   check("email")
     .isEmail()
     .withMessage("Please enter a valid email")
@@ -57,5 +57,21 @@ const checkLoginForm = [
     }),
 ];
 
-exports.checkLoginForm = checkLoginForm;
-exports.checkSignupForm = checkSignupForm;
+const checkAddProduct = [
+  body("title").isString().isLength({ min: 3 }).trim(),
+  body("imageUrl").isURL(),
+  body("price").isFloat(),
+  body("description").isString().trim().isLength({ min: 5, max: 400 }),
+];
+
+const checkEditProduct = [
+  body("title").isString().isLength({ min: 3 }).trim(),
+  body("imageUrl").isURL(),
+  body("price").isFloat(),
+  body("description").isString().trim().isLength({ min: 5, max: 400 }),
+];
+
+exports.checkLogin = checkLogin;
+exports.checkSignup = checkSignup;
+exports.checkAddProduct = checkAddProduct;
+exports.checkEditProduct = checkEditProduct;

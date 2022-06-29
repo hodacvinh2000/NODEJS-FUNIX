@@ -9,9 +9,9 @@ router.get("/login", authController.getLogin);
 
 router.get("/signup", authController.getSignup);
 
-router.post("/login", validator.checkLoginForm, authController.postLogin);
+router.post("/login", validator.checkLogin, authController.postLogin);
 
-router.post("/signup", validator.checkSignupForm, authController.postSignup);
+router.post("/signup", validator.checkSignup, authController.postSignup);
 
 router.post("/logout", authController.postLogout);
 
