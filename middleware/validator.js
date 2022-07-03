@@ -59,14 +59,12 @@ const checkLogin = [
 
 const checkAddProduct = [
   body("title").isString().isLength({ min: 3 }).trim(),
-  body("imageUrl").isURL(),
   body("price").isFloat(),
   body("description").isString().trim().isLength({ min: 5, max: 400 }),
 ];
 
 const checkEditProduct = [
   body("title").isString().isLength({ min: 3 }).trim(),
-  body("imageUrl").isURL(),
   body("price").isFloat(),
   body("description").isString().trim().isLength({ min: 5, max: 400 }),
 ];
