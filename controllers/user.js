@@ -1,10 +1,14 @@
 const User = require("../models/user");
 const TimeKeeping = require("../models/timeKeeping");
 const DayOff = require("../models/dayOff");
+const PDFDocument = require("pdfkit");
+const path = require("path");
+const fs = require("fs");
 
 exports.getUserInfo = (req, res, next) => {
   return res.render("userInfo", {
     user: req.user,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -19,6 +23,7 @@ exports.getTimeKeepingPage = async (req, res, next) => {
       return res.render("timekeeping", {
         user: req.user,
         timekeeping: timekeeping,
+        isAuthenticated: req.session.isLoggedIn,
       });
     } else {
       let timekeepings = await TimeKeeping.find({
@@ -31,6 +36,7 @@ exports.getTimeKeepingPage = async (req, res, next) => {
         user: req.user,
         timekeepings: timekeepings,
         workTime: workTimeInDate(timekeepings, day),
+        isAuthenticated: req.session.isLoggedIn,
       });
     }
   } catch (e) {
@@ -116,15 +122,20 @@ exports.addDayOff = (req, res, next) => {
 
 exports.updateUser = (req, res, next) => {
   const user = req.user;
-  user.image = req.body.imageUrl;
-  return user
-    .save()
-    .then(() => {
-      return res.redirect("/userInfo");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  const image = req.file;
+  if (image) {
+    user.image = image.path;
+    return user
+      .save()
+      .then(() => {
+        return res.redirect("/userInfo");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    return res.redirect("/userInfo");
+  }
 };
 
 /*
@@ -134,9 +145,16 @@ exports.updateUser = (req, res, next) => {
   3. Lấy số giờ đăng ký nghỉ (annualLeave) của từng ngày + tổng số giờ làm trong ngày => phiên làm cuối cùng trong ngày
   4. Tính lương tháng
 */
+const ITEMS_PER_PAGE = 2;
 exports.workTimeAndSalary = async (req, res, next) => {
   try {
-    let timekeepings = await TimeKeeping.find({ userId: req.user._id });
+    let page = +req.query.page || 1;
+    let timekeepings = await TimeKeeping.find({ userId: req.user._id }).sort([
+      ["createdAt", "asc"],
+    ]);
+    // .skip((page - 1) * ITEMS_PER_PAGE)
+    // .limit(ITEMS_PER_PAGE);
+    let manager = await User.findById(req.user.managedBy);
     let dayoffs = await DayOff.find({ userId: req.user._id });
     if (timekeepings.length > 0) {
       let t = [];
@@ -302,19 +320,49 @@ exports.workTimeAndSalary = async (req, res, next) => {
           totalOverTime = 0;
         }
       }
+      let totalItems = await TimeKeeping.find({
+        userId: req.user._id,
+      }).countDocuments();
+      let pagination = {
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        previousPage: page - 1,
+        nextPage: page + 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+      };
       let reqmonth = req.query.month;
       let reqyear = req.query.year;
       if (reqmonth && reqyear) {
         return res.render("worktimeAndSalary", {
-          timekeepings: t,
+          manager: manager,
+          timekeepings: t.slice(
+            (page - 1) * ITEMS_PER_PAGE,
+            page * ITEMS_PER_PAGE
+          ),
           salary: salary.find(
             (s) => s.month === Number(reqmonth) && s.year === Number(reqyear)
           ),
+          pagination: pagination,
+          isAuthenticated: req.session.isLoggedIn,
         });
       }
       return res.render("worktimeAndSalary", {
-        timekeepings: t,
+        manager: manager,
+        timekeepings: t.slice(
+          (page - 1) * ITEMS_PER_PAGE,
+          page * ITEMS_PER_PAGE
+        ),
         salary: null,
+        pagination: pagination,
+        isAuthenticated: req.session.isLoggedIn,
+      });
+    } else {
+      return res.render("worktimeAndSalary", {
+        manager: manager,
+        timekeepings: [],
+        salary: null,
+        isAuthenticated: req.session.isLoggedIn,
       });
     }
   } catch (e) {
@@ -322,9 +370,17 @@ exports.workTimeAndSalary = async (req, res, next) => {
   }
 };
 
-exports.getCovidPage = (req, res, next) => {
+exports.getCovidPage = async (req, res, next) => {
+  let listStaff = await User.find({ managedBy: req.user._id });
+  let selectedUserId = req.query.user;
+  let selectedUser = selectedUserId
+    ? await User.findById(selectedUserId)
+    : req.user;
   return res.render("covid", {
     user: req.user,
+    listStaff: listStaff,
+    selectedUser: selectedUser,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -378,6 +434,66 @@ exports.registerCovid = (req, res, next) => {
     .catch((err) => {
       console.log(err);
     });
+};
+
+exports.exportPDFCovid = async (req, res, next) => {
+  const userId = req.query.user;
+  const user = await User.findById(userId);
+  const covidFileName = "covid-" + userId + ".pdf";
+  const covidFilePath = path.join("covidPDF", covidFileName);
+
+  const pdfDoc = new PDFDocument({ font: "Times-Roman" });
+  res.setHeader(
+    "Content-Disposition",
+    'inline; filename="' + covidFileName + '"'
+  );
+  pdfDoc.pipe(fs.createWriteStream(covidFilePath));
+  pdfDoc.pipe(res);
+
+  let temperatureText = "";
+  let vaccineText = "";
+  let haveCovidText = "";
+  user.temperature.map((item) => {
+    temperatureText +=
+      "Time: " +
+      getDate(item.time) +
+      " " +
+      getTime(item.time) +
+      " -- " +
+      "Value: " +
+      item.value +
+      "\n";
+  });
+  user.vaccine.map((item) => {
+    vaccineText +=
+      "Date: " +
+      getDate(item.date) +
+      " -- " +
+      "Type: " +
+      item.typeOfVaccine +
+      " -- Serial: " +
+      item.serial +
+      "\n";
+  });
+  user.haveCovid.map((item) => {
+    const haveCovid = item.status ? "Haved Covid \n" : "No Covid \n";
+    haveCovidText +=
+      "Date: " + getDate(item.date) + " -- HaveCovid: " + haveCovid;
+  });
+  pdfDoc.fontSize(26).text("Name: " + user.name, { underline: true }, 100, 80);
+  pdfDoc.text("---------------------");
+  pdfDoc.fontSize(26).text("Temperature:", { underline: true });
+  pdfDoc.fontSize(14).text(temperatureText);
+  pdfDoc.text("---------------------");
+  pdfDoc.fontSize(26).text("Vaccine:", { underline: true });
+  pdfDoc.fontSize(14).text(vaccineText);
+  pdfDoc.text("---------------------");
+  pdfDoc.fontSize(26).text("Haved Covid:", { underline: true });
+  pdfDoc.fontSize(14).text(haveCovidText);
+  pdfDoc.text("---------------------");
+  pdfDoc.end();
+  const file = fs.createReadStream(covidFilePath);
+  file.pipe(res);
 };
 
 const getTotalDayoff = (dayoffs, day) => {

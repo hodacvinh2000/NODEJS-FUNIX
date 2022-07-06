@@ -10,21 +10,21 @@ const TimeKeepingSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    require: true,
+    required: true,
   },
   status: {
     type: Boolean,
-    require: true,
+    required: true,
     default: true,
   },
   createdAt: {
     type: Date,
-    require: true,
+    required: true,
     default: new Date(),
   },
   updatedAt: {
     type: Date,
-    require: true,
+    required: true,
     default: new Date(),
   },
 });

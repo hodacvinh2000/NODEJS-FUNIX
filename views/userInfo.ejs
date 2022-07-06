@@ -1,29 +1,41 @@
 <%- include('includes/header.ejs') %>
-    <div class="flex-container">
-        <div class="flex-column"  style="width: 30%;">
-            <div class="card">
-                <img src="<%=user.image%>" class="card-img-top" alt="<%= user.name %>">
-            </div>
-        </div> 
-        <div class="flex-column"  style="width: 70%;">
-            <div class="card">
-                <div class="card-body">
-                    <p>ID: <%= user._id %></p>
-                    <p>Name: <%= user.name %></p>
-                    <p>DoB: <%= user.doB.getDate() %>/<%= user.doB.getMonth() %>/<%= user.doB.getFullYear() %></p>
-                    <p>SalaryScale: <%= user.salaryScale %></p>
-                    <p>StartDate: <%= user.startDate.getDate() %>/<%= user.startDate.getMonth() %>/<%= user.startDate.getFullYear() %></p>
-                    <p>Department: <%= user.department %></p>
-                    <p>AnnualLeave: <%= user.annualLeave %></p>
-                    <form action="/updateUser" method="post">
-                        <div class="form-group" style="margin-bottom: 10px;">
-                            ImageUrl:
-                            <input type="text" name="imageUrl" id="imageUrl" value="<%=user.image%>" class="form-control">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="flex-container">
+  <div class="flex-column" style="width: 30%">
+    <div class="card">
+      <img src="<%=user.image%>" class="card-img-top" alt="<%= user.name %>" />
     </div>
-    <%- include('includes/footer.ejs') %>
+  </div>
+  <div class="flex-column" style="width: 70%">
+    <div class="card">
+      <div class="card-body">
+        <p>ID: <%= user._id %></p>
+        <p>Name: <%= user.name %></p>
+        <p>
+          DoB: <%= user.doB.getDate() %>/<%= user.doB.getMonth() %>/<%=
+          user.doB.getFullYear() %>
+        </p>
+        <p>SalaryScale: <%= user.salaryScale %></p>
+        <p>
+          StartDate: <%= user.startDate.getDate() %>/<%=
+          user.startDate.getMonth() %>/<%= user.startDate.getFullYear() %>
+        </p>
+        <p>Department: <%= user.department %></p>
+        <p>AnnualLeave: <%= user.annualLeave %></p>
+        <form action="/updateUser" method="post" enctype="multipart/form-data">
+          <div class="form-group" style="margin-bottom: 10px">
+            ImageUrl:
+            <input
+              style="width: 20rem"
+              type="file"
+              name="image"
+              id="image"
+              class="form-control"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('includes/footer.ejs') %>

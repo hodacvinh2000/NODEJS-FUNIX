@@ -1,10 +1,17 @@
-const { Decimal128 } = require("mongodb");
 const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+  },
+  password: {
     type: String,
     required: true,
   },
@@ -43,7 +50,7 @@ const userSchema = new Schema({
         tkpId: {
           type: Schema.Types.ObjectId,
           ref: "Timekeeping",
-          require: true,
+          required: true,
         },
       },
     ],
@@ -54,7 +61,7 @@ const userSchema = new Schema({
         dayoffId: {
           type: Schema.Types.ObjectId,
           ref: "Dayoff",
-          require: true,
+          required: true,
         },
       },
     ],
@@ -63,12 +70,12 @@ const userSchema = new Schema({
     {
       time: {
         type: Date,
-        require: true,
+        required: true,
         default: new Date(),
       },
       value: {
         type: Number,
-        require: true,
+        required: true,
       },
     },
   ],
@@ -76,15 +83,15 @@ const userSchema = new Schema({
     {
       date: {
         type: Date,
-        require: true,
+        required: true,
       },
       typeOfVaccine: {
         type: String,
-        require: true,
+        required: true,
       },
       serial: {
         type: Number,
-        require: true,
+        required: true,
       },
     },
   ],
@@ -92,14 +99,22 @@ const userSchema = new Schema({
     {
       date: {
         type: Date,
-        require: true,
+        required: true,
       },
       status: {
         type: Boolean,
-        require: true,
+        required: true,
       },
     },
   ],
+  role: {
+    type: String,
+    required: true,
+  },
+  managedBy: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 userSchema.methods.addTimekeeping = function (timekeeping) {

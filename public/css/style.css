@@ -1,24 +1,67 @@
 tr {
-    border: 2px solid black;
+  border: 2px solid #bacbe6;
 }
 
 .tkp-main {
-    margin: 10px;
+  margin: 10px;
 }
 
 .list-button {
-    margin: 10px;
+  margin: 10px;
 }
 
 .card {
-    margin: 10px;
+  margin: 10px;
 }
 
 .flex-container {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .btn {
-    margin: 20px;
+  margin: 20px;
+}
+
+#timekeepings {
+  margin-top: 1rem;
+}
+
+.login-form {
+  width: 20%;
+  height: auto;
+  margin: 2rem 40% 0 40%;
+}
+
+.btn {
+  margin-left: 0;
+}
+
+ul li {
+  margin: 0 1rem;
+}
+
+.pagination {
+  width: 10%;
+  text-align: center;
+  margin: 0 45%;
+}
+
+.pagination a {
+  padding: 0.25rem 0.5rem;
+  margin: 0.5rem;
+  background-color: aquamarine;
+  border: 1px solid rgb(1, 214, 143);
+  border-radius: 3px;
+  text-decoration: none;
+}
+
+.pagination a:hover,
+.pagination a:active,
+.pagination a.active {
+  background-color: aqua;
+}
+
+.filter-user-form {
+  margin: 1rem 0.7rem;
 }

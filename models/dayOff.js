@@ -6,19 +6,19 @@ const DayOffSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    require: true,
+    required: true,
   },
   dayoff: {
     type: Date,
-    require: true,
+    required: true,
   },
   hours: {
     type: Number,
-    require: true,
+    required: true,
   },
   reason: {
     type: String,
-    require: true,
+    required: true,
   },
 });
 

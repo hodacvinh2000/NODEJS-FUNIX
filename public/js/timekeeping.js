@@ -57,11 +57,17 @@ function formCovid() {
   <input type="date" name="date" class="form-control">
   <div class="form-check">
     <input type="checkbox" id="status" name="status" class="form-check-input">
-    <label class="form-check-label" for="status"> Mắc covid/ đã khỏi</label>
+    <label class="form-check-label" for="status"> Mắc covid</label>
   </div>
   <button type="submit" class="btn btn-primary">Đăng ký</button>
 </form>`;
   } else {
     form.innerHTML = "";
   }
+}
+
+function selectUser() {
+  const id = document.getElementById("selectUser").value;
+  console.log("abadsd", id);
+  location.assign(`/covid?user=${id}`);
 }
