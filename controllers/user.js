@@ -163,10 +163,10 @@ exports.updateUser = (req, res, next) => {
   3. Lấy số giờ đăng ký nghỉ (annualLeave) của từng ngày + tổng số giờ làm trong ngày => phiên làm cuối cùng trong ngày
   4. Tính lương tháng
 */
-const ITEMS_PER_PAGE = 2;
 exports.workTimeAndSalary = async (req, res, next) => {
   try {
     let page = +req.query.page || 1;
+    let limit = +req.query.limit || 20;
     let timekeepings = await TimeKeeping.find({ userId: req.user._id }).sort([
       ["createdAt", "asc"],
     ]);
@@ -343,11 +343,11 @@ exports.workTimeAndSalary = async (req, res, next) => {
       }).countDocuments();
       let pagination = {
         currentPage: page,
-        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasNextPage: limit * page < totalItems,
         hasPreviousPage: page > 1,
         previousPage: page - 1,
         nextPage: page + 1,
-        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
+        lastPage: Math.ceil(totalItems / limit),
       };
       let reqmonth = req.query.month;
       let reqyear = req.query.year;
@@ -363,18 +363,17 @@ exports.workTimeAndSalary = async (req, res, next) => {
             (s) => s.month === Number(reqmonth) && s.year === Number(reqyear)
           ),
           pagination: pagination,
+          limit: limit,
           isAuthenticated: req.session.isLoggedIn,
         });
       }
       return res.render("worktimeAndSalary", {
         user: req.user,
         manager: manager,
-        timekeepings: t.slice(
-          (page - 1) * ITEMS_PER_PAGE,
-          page * ITEMS_PER_PAGE
-        ),
+        timekeepings: t.slice((page - 1) * limit, page * limit),
         salary: null,
         pagination: pagination,
+        limit: limit,
         isAuthenticated: req.session.isLoggedIn,
       });
     } else {
@@ -383,6 +382,7 @@ exports.workTimeAndSalary = async (req, res, next) => {
         manager: manager,
         timekeepings: [],
         salary: null,
+        limit: limit,
         isAuthenticated: req.session.isLoggedIn,
       });
     }
@@ -503,7 +503,7 @@ exports.exportPDFCovid = async (req, res, next) => {
     haveCovidText +=
       "Ngày: " + getDate(item.date) + " -- Mắc covid: " + haveCovid;
   });
-  pdfDoc.font(path.join(__dirname, "fonts", "Roboto-Black.ttf"));
+  pdfDoc.font("fonts/Roboto-Black.ttf");
   pdfDoc.fontSize(26).text("Tên: " + user.name, { underline: true }, 100, 80);
   pdfDoc.text("---------------------");
   pdfDoc.fontSize(26).text("Đăng kí nhiệt độ thân thể:", { underline: true });

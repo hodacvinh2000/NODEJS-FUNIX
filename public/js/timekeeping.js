@@ -86,3 +86,8 @@ function clickDeleteTimekeepingButton(tkpId, selectedUser, month, year) {
   tkpIdInput.value = tkpId;
   url.value = `/confirmTimekeeping?user=${selectedUser}&month=${month}&year=${year}`;
 }
+
+function selectRow() {
+  const rows = document.getElementById("rows").value;
+  location.assign(`/workTimeAndSalary?limit=${rows}`);
+}

@@ -4,9 +4,22 @@
   <div style="width: 100%">
     <h4 align="center">Danh sách phiên làm việc</h4>
     <% if (manager) { %>
-    <h6 style="margin-left: 1rem">
-      ID: <%= manager._id %> --- Name: <%=manager.name %>
-    </h6>
+    <div class="above-table">
+      <span style="align-self: center; font-size: large; font-weight: bold">
+        ID: <%= manager._id %> --- Name: <%=manager.name %>
+      </span>
+      <span>
+        <div>
+          <label for="rows">Số hàng:</label>
+          <select name="rows" id="rows" onchange="selectRow()" class="form-control" style="width: 60px;display: inline">
+            <option value="<%= limit %>" selected><%= limit %></option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+          </select>
+        </div>
+      </span>
+    </div>
     <% } %>
     <table class="table table-striped">
       <thead>

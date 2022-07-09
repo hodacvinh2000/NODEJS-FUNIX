@@ -45,6 +45,7 @@ ul li {
   width: 10%;
   text-align: center;
   margin: 0 45%;
+  justify-content: center;
 }
 
 .pagination a {
@@ -64,4 +65,10 @@ ul li {
 
 .filter-user-form {
   margin: 1rem 0.7rem;
+}
+
+.above-table {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.5rem;
 }
