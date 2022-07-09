@@ -95,7 +95,7 @@ app.use(authRoutes);
 mongoose
   .connect(MONGODB_URI)
   .then((result) => {
-    app.listen(process.evn.PORT || 3000);
+    app.listen(process.env.PORT || 3000);
   })
   .catch((err) => {
     console.log(err);
