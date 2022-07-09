@@ -635,7 +635,7 @@ exports.getConfirmTimekeeping = async (req, res, next) => {
     )
       return item;
   });
-  return res.render("confirmTImekeeping", {
+  return res.render("confirmTimekeeping", {
     timekeepings: t,
     user: req.user,
     listStaff: listStaff,
