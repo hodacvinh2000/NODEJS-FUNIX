@@ -1,3 +1,5 @@
+const { text } = require("pdfkit");
+
 function showStartWorkForm(name) {
   const form = document.getElementById("startWorkForm");
   form.innerHTML =
@@ -68,6 +70,19 @@ function formCovid() {
 
 function selectUser() {
   const id = document.getElementById("selectUser").value;
-  console.log("abadsd", id);
   location.assign(`/covid?user=${id}`);
+}
+
+function filterConfirmTimekeeping() {
+  const id = document.getElementById("user").value;
+  const month = document.getElementById("month").value;
+  const year = document.getElementById("year").value;
+  location.assign(`/confirmTimekeeping?user=${id}&month=${month}&year=${year}`);
+}
+
+function clickDeleteTimekeepingButton(tkpId, selectedUser, month, year) {
+  const tkpIdInput = document.getElementById("tkpId");
+  const url = document.getElementById("url");
+  tkpIdInput.value = tkpId;
+  url.value = `/confirmTimekeeping?user=${selectedUser}&month=${month}&year=${year}`;
 }

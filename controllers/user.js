@@ -47,24 +47,33 @@ exports.getTimeKeepingPage = async (req, res, next) => {
 exports.postAddTimekeeping = (req, res, next) => {
   const workPlace = req.body.workPlace;
   const userId = req.user._id;
-
-  // add a timekeeping
-  const timeKeeping = new TimeKeeping({
-    workPlace: workPlace,
-    userId: userId,
-  });
-  timeKeeping
-    .save()
-    .then((result) => {
-      const user = req.user;
-      return user.addTimekeeping(result);
-    })
-    .then(() => {
-      return res.redirect("/");
-    })
-    .catch((err) => {
-      console.log(err);
+  // check user is confirmed this month ?
+  const month = new Date().getMonth() + 1;
+  const year = new Date().getFullYear();
+  if (
+    !req.user.confirm.find((item) => item.month === month && item.year === year)
+  ) {
+    // add a timekeeping
+    const timeKeeping = new TimeKeeping({
+      workPlace: workPlace,
+      userId: userId,
     });
+    timeKeeping
+      .save()
+      .then((result) => {
+        const user = req.user;
+        return user.addTimekeeping(result);
+      })
+      .then(() => {
+        return res.redirect("/");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  } else {
+    res.write("Can not add timekeeping");
+    res.end();
+  }
 };
 
 exports.checkout = async (req, res, next) => {
@@ -91,32 +100,41 @@ exports.checkout = async (req, res, next) => {
 
 exports.addDayOff = (req, res, next) => {
   const dayoff = new Date(req.body.dayoff);
-  const hours = Number(req.body.hours);
-  const reason = req.body.reason;
-  const onLeave = new DayOff({
-    userId: req.user._id,
-    dayoff: dayoff,
-    hours: hours,
-    reason: reason,
-  });
-  if (req.user.annualLeave * 8 < hours) {
-    return res.redirect("/");
+  const month = dayoff.getMonth() + 1;
+  const year = dayoff.getFullYear();
+  if (
+    !req.user.confirm.find((item) => item.month === month && item.year === year)
+  ) {
+    const hours = Number(req.body.hours);
+    const reason = req.body.reason;
+    const onLeave = new DayOff({
+      userId: req.user._id,
+      dayoff: dayoff,
+      hours: hours,
+      reason: reason,
+    });
+    if (req.user.annualLeave * 8 < hours) {
+      return res.redirect("/");
+    } else {
+      return onLeave
+        .save()
+        .then(() => {
+          const user = req.user;
+          user.annualLeave = user.annualLeave - hours / 8;
+          user
+            .save()
+            .then(() => {
+              return res.redirect("/");
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        })
+        .catch((err) => console.log(err));
+    }
   } else {
-    return onLeave
-      .save()
-      .then(() => {
-        const user = req.user;
-        user.annualLeave = user.annualLeave - hours / 8;
-        user
-          .save()
-          .then(() => {
-            return res.redirect("/");
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      })
-      .catch((err) => console.log(err));
+    res.write("Can not add dayoff");
+    res.end();
   }
 };
 
@@ -335,6 +353,7 @@ exports.workTimeAndSalary = async (req, res, next) => {
       let reqyear = req.query.year;
       if (reqmonth && reqyear) {
         return res.render("worktimeAndSalary", {
+          user: req.user,
           manager: manager,
           timekeepings: t.slice(
             (page - 1) * ITEMS_PER_PAGE,
@@ -348,6 +367,7 @@ exports.workTimeAndSalary = async (req, res, next) => {
         });
       }
       return res.render("worktimeAndSalary", {
+        user: req.user,
         manager: manager,
         timekeepings: t.slice(
           (page - 1) * ITEMS_PER_PAGE,
@@ -359,6 +379,7 @@ exports.workTimeAndSalary = async (req, res, next) => {
       });
     } else {
       return res.render("worktimeAndSalary", {
+        user: req.user,
         manager: manager,
         timekeepings: [],
         salary: null,
@@ -442,7 +463,7 @@ exports.exportPDFCovid = async (req, res, next) => {
   const covidFileName = "covid-" + userId + ".pdf";
   const covidFilePath = path.join("covidPDF", covidFileName);
 
-  const pdfDoc = new PDFDocument({ font: "Times-Roman" });
+  const pdfDoc = new PDFDocument();
   res.setHeader(
     "Content-Disposition",
     'inline; filename="' + covidFileName + '"'
@@ -455,45 +476,205 @@ exports.exportPDFCovid = async (req, res, next) => {
   let haveCovidText = "";
   user.temperature.map((item) => {
     temperatureText +=
-      "Time: " +
+      "Thời gian: " +
       getDate(item.time) +
       " " +
       getTime(item.time) +
       " -- " +
-      "Value: " +
+      "Nhiệt độ: " +
       item.value +
       "\n";
   });
   user.vaccine.map((item) => {
     vaccineText +=
-      "Date: " +
+      "Ngày: " +
       getDate(item.date) +
       " -- " +
-      "Type: " +
+      "Loại vắc xin: " +
       item.typeOfVaccine +
-      " -- Serial: " +
+      " -- Lần tiêm thứ: " +
       item.serial +
       "\n";
   });
   user.haveCovid.map((item) => {
-    const haveCovid = item.status ? "Haved Covid \n" : "No Covid \n";
+    const haveCovid = item.status
+      ? "Mắc covid \n"
+      : "Đã khỏi/Không mắc covid \n";
     haveCovidText +=
-      "Date: " + getDate(item.date) + " -- HaveCovid: " + haveCovid;
+      "Ngày: " + getDate(item.date) + " -- Mắc covid: " + haveCovid;
   });
-  pdfDoc.fontSize(26).text("Name: " + user.name, { underline: true }, 100, 80);
+  pdfDoc.font(path.join(__dirname, "fonts", "Roboto-Black.ttf"));
+  pdfDoc.fontSize(26).text("Tên: " + user.name, { underline: true }, 100, 80);
   pdfDoc.text("---------------------");
-  pdfDoc.fontSize(26).text("Temperature:", { underline: true });
+  pdfDoc.fontSize(26).text("Đăng kí nhiệt độ thân thể:", { underline: true });
   pdfDoc.fontSize(14).text(temperatureText);
   pdfDoc.text("---------------------");
-  pdfDoc.fontSize(26).text("Vaccine:", { underline: true });
+  pdfDoc.fontSize(26).text("Tiêm vắc xin:", { underline: true });
   pdfDoc.fontSize(14).text(vaccineText);
   pdfDoc.text("---------------------");
-  pdfDoc.fontSize(26).text("Haved Covid:", { underline: true });
+  pdfDoc.fontSize(26).text("Mắc Covid:", { underline: true });
   pdfDoc.fontSize(14).text(haveCovidText);
   pdfDoc.text("---------------------");
   pdfDoc.end();
   const file = fs.createReadStream(covidFilePath);
   file.pipe(res);
+};
+
+exports.getConfirmTimekeeping = async (req, res, next) => {
+  let listStaff = await User.find({ managedBy: req.user._id });
+  const month = +req.query.month;
+  const year = +req.query.year;
+  let selectedUserId = req.query.user;
+  let selectedUser = selectedUserId
+    ? await User.findById(selectedUserId)
+    : null;
+  let timekeepings = await TimeKeeping.find({ userId: selectedUserId }).sort([
+    ["createdAt", "asc"],
+  ]);
+  let dayoffs = await DayOff.find({ userId: selectedUserId });
+  let t = [];
+  if (timekeepings.length > 0) {
+    let day = timekeepings[0].createdAt;
+    let workTime = 0;
+    for (i = 0; i < timekeepings.length; i++) {
+      if (i === timekeepings.length - 1) {
+        // là lần cuối nhưng cùng ngày
+        if (equalDay(day, timekeepings[i].createdAt)) {
+          let totalDayoff = getTotalDayoff(dayoffs, timekeepings[i].createdAt);
+          if (i >= 1) {
+            t.push({
+              timekeeping: timekeepings[i - 1],
+              workedTime: convertTime(lengthOfWorkTime(timekeepings[i - 1])),
+              annualLeave: totalDayoff,
+            });
+          }
+          t.push({
+            timekeeping: timekeepings[i],
+            annualLeave: totalDayoff,
+            workedTime: convertTime(lengthOfWorkTime(timekeepings[i])),
+            totalTime: (totalDayoff + workTime).toFixed(1),
+            overTime: (totalDayoff + workTime > 8
+              ? totalDayoff + workTime - 8
+              : 0
+            ).toFixed(1),
+          });
+        }
+        // là lần cuối nhưng khác ngày
+        else {
+          if (
+            !equalDay(timekeepings[i].createdAt, timekeepings[i - 1].createdAt)
+          ) {
+            let preTotalDayoff = getTotalDayoff(
+              dayoffs,
+              timekeepings[i - 1].createdAt
+            );
+            // push lần cuối của ngày trước
+            t.push({
+              timekeeping: timekeepings[i - 1],
+              annualLeave: preTotalDayoff,
+              workedTime: convertTime(lengthOfWorkTime(timekeepings[i - 1])),
+              totalTime: (preTotalDayoff + workTime).toFixed(1),
+              overTime: (preTotalDayoff + workTime > 8
+                ? preTotalDayoff + workTime - 8
+                : 0
+              ).toFixed(1),
+            });
+          }
+          // push ngày này
+          let totalDayoff = getTotalDayoff(dayoffs, timekeepings[i].createdAt);
+          workTime = parseFloat(lengthOfWorkTime(timekeepings[i]) / 60 / 60);
+          t.push({
+            timekeeping: timekeepings[i],
+            annualLeave: totalDayoff,
+            workedTime: convertTime(lengthOfWorkTime(timekeepings[i])),
+            totalTime: (totalDayoff + workTime).toFixed(1),
+            overTime: (totalDayoff + workTime > 8
+              ? totalDayoff + workTime - 8
+              : 0
+            ).toFixed(1),
+          });
+        }
+      } else {
+        if (!equalDay(day, timekeepings[i].createdAt)) {
+          let preTotalDayoff = getTotalDayoff(
+            dayoffs,
+            timekeepings[i - 1].createdAt
+          );
+          // push lần cuối của ngày trước
+          t.push({
+            timekeeping: timekeepings[i - 1],
+            annualLeave: preTotalDayoff,
+            workedTime: convertTime(lengthOfWorkTime(timekeepings[i - 1])),
+            totalTime: (preTotalDayoff + workTime).toFixed(1),
+            overTime: (preTotalDayoff + workTime > 8
+              ? preTotalDayoff + workTime - 8
+              : 0
+            ).toFixed(1),
+          });
+          // set workTime
+          workTime = parseFloat(lengthOfWorkTime(timekeepings[i]) / 60 / 60);
+        } else {
+          workTime += parseFloat(lengthOfWorkTime(timekeepings[i]) / 60 / 60);
+          let totalDayoff = getTotalDayoff(dayoffs, timekeepings[i].createdAt);
+          if (i >= 1) {
+            t.push({
+              timekeeping: timekeepings[i - 1],
+              annualLeave: totalDayoff,
+              workedTime: convertTime(lengthOfWorkTime(timekeepings[i - 1])),
+            });
+          }
+        }
+      }
+      day = timekeepings[i].createdAt;
+    }
+  }
+  t = t.filter((item) => {
+    if (
+      item.timekeeping.createdAt.getMonth() + 1 === month &&
+      item.timekeeping.createdAt.getFullYear() === year
+    )
+      return item;
+  });
+  return res.render("confirmTImekeeping", {
+    timekeepings: t,
+    user: req.user,
+    listStaff: listStaff,
+    selectedUser: selectedUser ? selectedUser : listStaff[0],
+    month: month ? month : "",
+    year: year ? year : "",
+    isAuthenticated: req.session.isLoggedIn,
+  });
+};
+
+exports.deleteTimekeeping = (req, res, next) => {
+  const tkpId = req.body.tkpId;
+  const url = req.body.url;
+  TimeKeeping.findByIdAndRemove(tkpId)
+    .then(() => {
+      res.redirect(url);
+    })
+    .catch((err) => console.log(err));
+};
+
+exports.confirmTimekeeping = async (req, res, next) => {
+  const userId = req.query.user;
+  const month = +req.query.month;
+  const year = +req.query.year;
+  let listTimekeeping = await TimeKeeping.find({ userId: userId });
+  listTimekeeping = listTimekeeping.filter(
+    (item) =>
+      item.createdAt.getMonth() + 1 === month &&
+      item.createdAt.getFullYear() === year
+  );
+  User.findById(userId).then((user) => {
+    user.confirm.push({ month: month, year: year });
+    user.save();
+  });
+  listTimekeeping.forEach(async (item) => {
+    item.confirm = true;
+    item.save();
+  });
+  return res.redirect("/confirmTimekeeping");
 };
 
 const getTotalDayoff = (dayoffs, day) => {

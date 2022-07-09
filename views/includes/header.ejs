@@ -39,7 +39,14 @@
             <li class="nav-item">
               <a class="nav-link active" href="/covid">Covid</a>
             </li>
-            <% } %>
+            <!-- Manager confirmTimekeeping -->
+            <% if (user.role === 'manager') { %>
+            <li class="nav-item">
+              <a href="/confirmTimekeeping" class="nav-link active"
+                >Confirm Timekeeping</a
+              >
+            </li>
+            <% } %> <% } %>
           </ul>
           <div class="d-flex flex-row-reverse">
             <ul class="navbar-nav">

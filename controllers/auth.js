@@ -3,6 +3,7 @@ const User = require("../models/user");
 exports.getLogin = (req, res, next) => {
   if (!req.session.user) {
     res.render("auth/login", {
+      user: null,
       path: "/login",
       pageTitle: "login",
       isAuthenticated: false,

@@ -17,6 +17,11 @@ const TimeKeepingSchema = new Schema({
     required: true,
     default: true,
   },
+  confirm: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   createdAt: {
     type: Date,
     required: true,

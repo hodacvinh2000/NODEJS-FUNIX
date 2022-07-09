@@ -112,7 +112,7 @@ mongoose
     //     user.save();
     //   }
     // });
-    app.listen(3000);
+    app.listen(process.evn.PORT || 3000);
   })
   .catch((err) => {
     console.log(err);

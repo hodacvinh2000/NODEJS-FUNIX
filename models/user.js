@@ -15,6 +15,18 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  confirm: [
+    {
+      month: {
+        type: Number,
+        required: true,
+      },
+      year: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
   doB: {
     type: Date,
     required: true,

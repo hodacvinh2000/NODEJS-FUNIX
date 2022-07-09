@@ -3,9 +3,12 @@ const router = express.Router();
 
 const userController = require("../controllers/user");
 const isAuth = require("../middleware/is-auth");
+const isManager = require("../middleware/is-manager");
 
 router.get("/index", (req, res, next) => {
-  return res.render("index");
+  return res.render("index", {
+    isAuthenticated: req.session.isLoggedIn,
+  });
 });
 
 // get user infomation route
@@ -46,5 +49,21 @@ router.post("/registerVaccine", isAuth, userController.registerVaccine);
 router.post("/registerCovid", isAuth, userController.registerCovid);
 
 router.get("/covidPDF", isAuth, userController.exportPDFCovid);
+
+router.get(
+  "/confirmTimekeeping",
+  isAuth,
+  isManager,
+  userController.getConfirmTimekeeping
+);
+
+router.post(
+  "/deleteTimekeeping",
+  isAuth,
+  isManager,
+  userController.deleteTimekeeping
+);
+
+router.get("/confirmTkp", isAuth, isManager, userController.confirmTimekeeping);
 
 module.exports = router;
