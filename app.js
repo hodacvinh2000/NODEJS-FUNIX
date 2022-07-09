@@ -95,23 +95,6 @@ app.use(authRoutes);
 mongoose
   .connect(MONGODB_URI)
   .then((result) => {
-    // User.findOne().then((user) => {
-    //   if (!user) {
-    //     const user = new User({
-    //       name: "Hồ Đắc Vinh",
-    //       email: "hodacvinh2000@gmail.com",
-    //       password: "123123",
-    //       doB: new Date("2000-07-17"),
-    //       salaryScale: 1.0,
-    //       startDate: new Date("2022-06-20"),
-    //       department: "IT",
-    //       annualLeave: 12.3,
-    //       image:
-    //         "https://scontent.fdad3-1.fna.fbcdn.net/v/t39.30808-6/278367292_831472097809307_403408694811896745_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=1VjkV2qXBfEAX8kPqVT&_nc_ht=scontent.fdad3-1.fna&oh=00_AT-XzB0-Jsy80TVMW7q23dNQsWKh9w5TYZr-3XdSE1_rrg&oe=62B4FE3E",
-    //     });
-    //     user.save();
-    //   }
-    // });
     app.listen(process.evn.PORT || 3000);
   })
   .catch((err) => {
